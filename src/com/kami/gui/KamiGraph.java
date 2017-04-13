@@ -29,6 +29,9 @@ public class KamiGraph {
 	private int row;
 	private int col;
 	private int numOfMoves;
+	/****** DEBUG ***** /
+	private int counter = 0;
+	/****** DEBUG *****/
 
 	public int getNumOfMoves() {
 		return numOfMoves;
@@ -327,7 +330,14 @@ public class KamiGraph {
 		return solutionStack;
 	}
 	
-	private List<KamiZone> changeZoneColor(List<KamiZone> oldZoneList, int index, Color newColor) {
+	private KamiZoneMap changeZoneColor(List<KamiZone> oldZoneList, int index, Color newColor) {
+		/****** DEBUG ***** /
+		this.counter++;
+		System.out.println(oldZoneList.get(index).getElement().getRow() + "," + oldZoneList.get(index).getElement().getColumn() + " " + newColor.toString());
+		if (counter > 50) {
+			System.exit(0);
+		}
+		/****** DEBUG *****/
 		List<KamiZone> newZoneList = copyZoneList(oldZoneList);
 		Color oldColor = newZoneList.get(index).getColor();
 		newZoneList.get(index).setColor(newColor);
@@ -414,7 +424,7 @@ public class KamiGraph {
 		return true;
 	}
 	
-	private boolean solveZoneList(List<KamiZone> zoneList, int numOfMoves, Stack<KamiSolution> solutionStack) {
+	private boolean solveZoneList(KamiZoneMap zoneMap, int numOfMoves, Stack<KamiSolution> solutionStack) {
 		if (numOfMoves == 1) {
 			Set<Color> colorSet = new HashSet<Color>();
 			for (KamiZone zone:zoneList) {
@@ -423,7 +433,7 @@ public class KamiGraph {
 			if (colorSet.size() <= 2) {
 				for (KamiZone zone:zoneList) {
 					for (Color color:zone.getConnectedColor()) {
-						List<KamiZone> newZoneList = changeZoneColor(zoneList, zone.getIndex(), color);
+						KamiZoneMap newZoneMap = changeZoneColor(zoneList, zone.getIndex(), color);
 						if (validateZones(newZoneList)) {
 							KamiSolution solution = new KamiSolution();
 							solution.setRow(zone.getElement().getRow());
@@ -542,7 +552,7 @@ public class KamiGraph {
 		}
 	}
 	
-	private List<KamiZone> analyzegroupList(List<Set<KamiTriangle>> groupList) {
+	private KamiZoneMap analyzegroupList(List<Set<KamiTriangle>> groupList) {
 		List<KamiZone> zoneList = new ArrayList<KamiZone>();
 		for (int i = 0; i < groupList.size(); i++) {
 			zoneList.add(new KamiZone());
