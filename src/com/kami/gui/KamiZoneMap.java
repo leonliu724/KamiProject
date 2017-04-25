@@ -3,9 +3,9 @@ package com.kami.gui;
 import java.util.List;
 
 public class KamiZoneMap {
-	List<KamiZone> zoneList;
-	List<KamiZoneColorOption> zoneColorOptionList;
-	boolean allDisconnected;
+	private List<KamiZone> zoneList;
+	private List<KamiZoneColorOption> zoneColorOptionList;
+	private boolean allDisconnected;
 	
 	public List<KamiZone> getZoneList() {
 		return zoneList;

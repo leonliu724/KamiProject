@@ -22,7 +22,7 @@ public class KamiTriangle extends Polygon {
 		blank = false;
 		border = false;
 		color = Color.WHITESMOKE;
-		this.setStroke(Color.LAVENDER);
+		this.setStroke(Color.color(0.75,0.75,0.75,0.05));
 		this.setFill(Color.WHITESMOKE);
 	}
 	

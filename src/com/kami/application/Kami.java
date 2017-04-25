@@ -10,6 +10,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import com.kami.gui.KamiGraph;
 import com.kami.gui.KamiTriangle;
@@ -37,20 +39,24 @@ public class Kami extends Application {
 
 	private Color colorSelection = Color.WHITESMOKE;
 	private Set<Color> colorPanel = new HashSet<Color>(Arrays.asList(
-//			Color.MEDIUMSEAGREEN, 
-//			Color.GRAY, 
+			Color.MEDIUMSEAGREEN, 
+//			Color.PALEGREEN,
 //			Color.DARKSEAGREEN, 
+//			Color.LIGHTGREEN,
+//			Color.GRAY, 
 //			Color.KHAKI,
 //			Color.SADDLEBROWN, 
-			Color.YELLOW,
-			Color.LIGHTGREEN,
+//			Color.YELLOW,
 //			Color.PURPLE,
 //			Color.DARKBLUE, 
 //			Color.HOTPINK, 
-			Color.INDIANRED, 
-			Color.CADETBLUE,
+			Color.RED,
+//			Color.INDIANRED, 
+			Color.DARKRED,
+//			Color.CADETBLUE,
 //			Color.LIGHTSKYBLUE, 
 //			Color.DARKORANGE, 
+//			Color.BLACK,
 			Color.WHITESMOKE));
 	private String mode = "DESIGN";
 	private static final double SCREEN_SIZE_X = 650;
@@ -246,7 +252,10 @@ public class Kami extends Application {
 		    		SolutionListener solutionListener = new SolutionListener(moves, recs, progress);
 		    		SolutionThread solutionThread = new SolutionThread(graph, Integer.parseInt(num));
 		    		solutionThread.addListener(solutionListener);
-		    		new Thread(solutionThread).start();;
+		    		ExecutorService executorService = Executors.newSingleThreadExecutor();
+		    		executorService.submit(solutionThread);
+		    		executorService.shutdown();
+//		    		new Thread(solutionThread).start();
 		    	}
 		    }
 		});

@@ -2,7 +2,6 @@ package com.kami.gui;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -10,6 +9,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import com.kami.cracks.KamiCrack1;
+import com.kami.cracks.KamiCrack2;
+import com.kami.cracks.KamiCrack3;
+import com.kami.cracks.KamiCrack4;
 import com.kami.gui.KamiTriangle;
 
 import javafx.animation.FillTransition;
@@ -29,9 +32,6 @@ public class KamiGraph {
 	private int row;
 	private int col;
 	private int numOfMoves;
-	/****** DEBUG ***** /
-	private int counter = 0;
-	/****** DEBUG *****/
 
 	public int getNumOfMoves() {
 		return numOfMoves;
@@ -311,176 +311,14 @@ public class KamiGraph {
 		long startTime = System.currentTimeMillis();
 		solutionStack = new Stack<KamiSolution>();
 		List<Set<KamiTriangle>> groupList = getGraphgroupList();
-		List<KamiZone> zoneList = analyzegroupList(groupList);
-		
-		/****** DEBUG ***** /
-		for (KamiZone zone:zoneList) {
-			System.out.print(zone.getName() + ": Color " + zone.getColor().toString() + ", Connection: ");
-			for (KamiZone neighbour:zone.getConnected()) {
-				System.out.print(neighbour.getName() + ", ");
-			}
-			System.out.println();
-		}
-		/****** DEBUG *****/
-		// solveGroupList(groupList, numOfMoves, solutionStack);
-		solveZoneList(zoneList, numOfMoves, solutionStack);
-		
+//		KamiCrack1 cracker = new KamiCrack1(groupList, numOfMoves, solutionStack);
+//		KamiCrack2 cracker = new KamiCrack2(groupList, numOfMoves, solutionStack);
+		KamiCrack3 cracker = new KamiCrack3(groupList, numOfMoves, solutionStack);
+//		KamiCrack4 cracker = new KamiCrack4(groupList, numOfMoves, solutionStack);
+		cracker.crack();
 		long endTime = System.currentTimeMillis();
 		System.out.println("It took " + (endTime - startTime) + " ms.");
 		return solutionStack;
-	}
-	
-	private KamiZoneMap changeZoneColor(List<KamiZone> oldZoneList, int index, Color newColor) {
-		/****** DEBUG ***** /
-		this.counter++;
-		System.out.println(oldZoneList.get(index).getElement().getRow() + "," + oldZoneList.get(index).getElement().getColumn() + " " + newColor.toString());
-		if (counter > 50) {
-			System.exit(0);
-		}
-		/****** DEBUG *****/
-		List<KamiZone> newZoneList = copyZoneList(oldZoneList);
-		Color oldColor = newZoneList.get(index).getColor();
-		newZoneList.get(index).setColor(newColor);
-		newZoneList.get(index).getConnectedColor().remove(newColor);
-		
-		for (KamiZone neighbour:newZoneList.get(index).getConnected()) {
-			boolean onlyOneOldColor = true;
-			
-			for (KamiZone farNeighbour:neighbour.getConnected()) {
-				if (farNeighbour.getIndex() != index) {
-					if (farNeighbour.getColor().equals(oldColor)) {
-						onlyOneOldColor = false;
-						break;
-					}
-				}
-			}
-			if (neighbour.getColor().equals(newColor)) {
-				neighbour.setMerged(true);
-				neighbour.getConnected().remove(newZoneList.get(index));
-				if (onlyOneOldColor) {
-					neighbour.getConnectedColor().remove(oldColor);
-				}
-				newZoneList.get(index).getConnectedColor().addAll(neighbour.getConnectedColor());
-			} else {
-				neighbour.getConnectedColor().add(newColor);
-				if (onlyOneOldColor) {
-					neighbour.getConnectedColor().remove(oldColor);
-				}
-			}
-		}
-		
-		List<Integer> removeList = new ArrayList<Integer>();
-		for (int i = 0; i < newZoneList.size(); i++) {
-			if (newZoneList.get(i).isMerged()) {
-				newZoneList.get(i).getConnected().remove(newZoneList.get(index));
-				newZoneList.get(index).getConnected().remove(newZoneList.get(i));
-				
-				for (KamiZone neighbourOfMergedNeighbour:newZoneList.get(i).getConnected()) {
-					neighbourOfMergedNeighbour.getConnected().remove(newZoneList.get(i));
-					neighbourOfMergedNeighbour.getConnected().add(newZoneList.get(index));
-					newZoneList.get(index).getConnected().add(neighbourOfMergedNeighbour);
-				}
-				removeList.add(i);
-			}
-		}
-		for (int i = removeList.size() - 1; i >= 0; i--) {
-			newZoneList.remove(removeList.get(i).intValue());
-		}
-		Collections.sort(newZoneList);
-		for (int i = 0; i < newZoneList.size(); i++) {
-			newZoneList.get(i).setIndex(i);
-		}
-		return newZoneList;
-	}
-	
-	private List<KamiZone> copyZoneList(List<KamiZone> oldZoneList) {
-		List<KamiZone> newZoneList = new ArrayList<KamiZone>();
-		for (int i = 0; i < oldZoneList.size(); i++) {
-			KamiZone zoneCopy = new KamiZone();
-			zoneCopy.setIndex(i);
-			zoneCopy.setElement(oldZoneList.get(i).getElement());
-			zoneCopy.setColor(oldZoneList.get(i).getColor());
-			newZoneList.add(zoneCopy);
-		}
-		for (int i = 0; i < oldZoneList.size(); i++) {
-			for (KamiZone connected:oldZoneList.get(i).getConnected()) {
-				newZoneList.get(i).getConnected().add(newZoneList.get(connected.getIndex()));
-			}
-			for (Color connectedColor:oldZoneList.get(i).getConnectedColor()) {
-				newZoneList.get(i).getConnectedColor().add(connectedColor);
-			}
-		}
-		return newZoneList;
-	}
-	
-	private boolean validateZones(List<KamiZone> zoneList) {
-		Color color = zoneList.get(0).getColor();
-		
-		for (KamiZone zone:zoneList) {
-			if (!zone.getColor().equals(color)) {
-				return false;
-			}
-		}
-		return true;
-	}
-	
-	private boolean solveZoneList(KamiZoneMap zoneMap, int numOfMoves, Stack<KamiSolution> solutionStack) {
-		if (numOfMoves == 1) {
-			Set<Color> colorSet = new HashSet<Color>();
-			for (KamiZone zone:zoneList) {
-				colorSet.add(zone.getColor());
-			}
-			if (colorSet.size() <= 2) {
-				for (KamiZone zone:zoneList) {
-					for (Color color:zone.getConnectedColor()) {
-						KamiZoneMap newZoneMap = changeZoneColor(zoneList, zone.getIndex(), color);
-						if (validateZones(newZoneList)) {
-							KamiSolution solution = new KamiSolution();
-							solution.setRow(zone.getElement().getRow());
-							solution.setCol(zone.getElement().getColumn());
-							solution.setColor(color);
-							solutionStack.push(solution);
-							return true;
-						}
-					}
-				}
-				return false;
-			} else {
-				return false;
-			}
-		} else {
-			Set<Color> colorSet = new HashSet<Color>();
-			for (KamiZone zone:zoneList) {
-				colorSet.add(zone.getColor());
-			}
-			if (colorSet.size() <= numOfMoves + 1) {
-				for (KamiZone zone:zoneList) {
-					for (Color color:zone.getConnectedColor()) {
-						List<KamiZone> newZoneList = changeZoneColor(zoneList, zone.getIndex(), color);
-						if (validateZones(newZoneList)) {
-							KamiSolution solution = new KamiSolution();
-							solution.setRow(zone.getElement().getRow());
-							solution.setCol(zone.getElement().getColumn());
-							solution.setColor(color);
-							solutionStack.push(solution);
-							return true;
-						} else {
-							if (solveZoneList(newZoneList, numOfMoves -1, solutionStack)) {
-								KamiSolution solution = new KamiSolution();
-								solution.setRow(zone.getElement().getRow());
-								solution.setCol(zone.getElement().getColumn());
-								solution.setColor(color);
-								solutionStack.push(solution);
-								return true;
-							} 
-						}
-					}
-				}
-				return false;
-			} else {
-				return false;
-			}
-		}
 	}
 	
 	private void spread(int rowNum, int columnNum, Color color, String operator) {
@@ -552,48 +390,7 @@ public class KamiGraph {
 		}
 	}
 	
-	private KamiZoneMap analyzegroupList(List<Set<KamiTriangle>> groupList) {
-		List<KamiZone> zoneList = new ArrayList<KamiZone>();
-		for (int i = 0; i < groupList.size(); i++) {
-			zoneList.add(new KamiZone());
-			zoneList.get(i).setIndex(i);
-			zoneList.get(i).setName("Zone" + i);
-		}
-		
-		for (int i = 0; i < groupList.size(); i++) {
-			Set<KamiTriangle> group = groupList.get(i);
-			boolean isElementSet = false;
-			for (KamiTriangle element:group) {
-				if (!isElementSet) {
-					zoneList.get(i).setElement(element);
-					zoneList.get(i).setColor(element.getColor());
-					isElementSet = true;
-				}
-				if (element.isBorder()) {
-					for (KamiTriangle neighbour:element.getConnected()) {
-						if (neighbour.isBlank()) {
-						} else {
-							if (!element.getColor().equals(neighbour.getColor())) {
-								zoneList.get(i).getConnectedColor().add(neighbour.getColor());
-								for (int j = 0; j < groupList.size(); j++) {
-									if (i != j) {
-										if (groupList.get(j).contains(neighbour)) {
-											zoneList.get(i).getConnected().add(zoneList.get(j));
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-		Collections.sort(zoneList);
-		for (int i = 0; i < zoneList.size(); i++) {
-			zoneList.get(i).setIndex(i);
-		}
-		return zoneList;
-	}
+	
 	
 	/*
 	private boolean solveGroupList(List<Set<KamiTriangle>> groupList, int numOfMoves, Stack<KamiSolution> solutionStack) {
